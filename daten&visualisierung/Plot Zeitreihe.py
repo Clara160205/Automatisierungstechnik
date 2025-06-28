@@ -1,20 +1,18 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# CSV laden
-df = pd.read_csv("mqtt_data.csv", parse_dates=["timestamp"])
 
-# Ein Beispiel-Plot für eine einfache Zeitreihe
-plt.figure()
-df["value"] = df["payload"].str.extract(r"\"value\":\s*([0-9\.]+)")  # wenn JSON-Wert z.B. {"value": 42.3}
-df["value"] = pd.to_numeric(df["value"], errors="coerce")
-df.dropna(inplace=True)
+df = pd.read_csv("mqtt_data_structured.csv")
 
-plt.plot(df["timestamp"], df["value"])
+
+df["timestamp"] = pd.to_datetime(df["timestamp"])
+zeitwert = "temperature_c" 
+
+plt.figure(figsize=(10, 5))
+plt.plot(df["timestamp"], df[zeitwert], marker='o', linestyle='-')
+plt.title(f"{zeitwert} über Zeit")
 plt.xlabel("Zeit")
-plt.ylabel("Messwert")
-plt.title("Zeitreihe eines Sensors aus MQTT")
-plt.xticks(rotation=45)
+plt.ylabel(zeitwert)
 plt.tight_layout()
 plt.savefig("zeitreihe_plot.png")
 plt.show()

@@ -56,7 +56,7 @@ mqttc.publish(topic_pub, payload)
 
 mqttc.loop_start()
 print("Beginne Datenerfassung für 15 Minuten...")
-time.sleep(15 * 60)
+time.sleep(3 * 60)
 mqttc.loop_stop()
 mqttc.disconnect()
 print("Beendet.")
