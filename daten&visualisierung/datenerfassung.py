@@ -25,7 +25,7 @@ names = f"{my_data['contact']['firstName']}_{my_data['contact']['secondName']}_{
 topic_pub = f"MC1Student/Namen/{names}"
 payload = '{"status": "on", "group": "gruppeA"}'
 
-# CSV vorbereiten
+
 if not os.path.exists(csv_file):
     with open(csv_file, mode='w', newline='') as f:
         writer = csv.writer(f)
@@ -56,7 +56,7 @@ mqttc.publish(topic_pub, payload)
 
 mqttc.loop_start()
 print("Beginne Datenerfassung für 15 Minuten...")
-time.sleep(3 * 60)
+time.sleep(15 * 60)
 mqttc.loop_stop()
 mqttc.disconnect()
 print("Beendet.")

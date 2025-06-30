@@ -5,18 +5,26 @@ input_csv = "mqtt_data.csv"
 output_csv = "mqtt_data_structured.csv"
 
 records = []
+FILTER_START = "2025-06-04T11:47:33"
 
 with open(input_csv, mode='r', newline='') as infile:
     reader = csv.reader(infile)
 
     for i, row in enumerate(reader):
-        if len(row) != 2:
+        ts, payload = row
+        
+        if i == 0:
+            continue
+        if ts < FILTER_START:
+            continue
+
+        if len(row) != 2: # Überprüfen 2 Spalten vorhanden sind (timestamp, payload)
             print(f"Zeile {i+1} übersprungen – falsche Spaltenanzahl: {row}")
             continue
 
-        ts, payload = row
+        
         if not payload or payload.strip() == "":
-            print(f"Leere Payload in Zeile {i+1} übersprungen.")
+            print(f"Leere Payload in Zeile {i+1}")
             continue
 
         try:
