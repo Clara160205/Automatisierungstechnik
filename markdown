@@ -17,4 +17,15 @@ Ausserdem wird der Füllstand der Flaschen geplottet. Alle Nulldaten werden entf
 
 Das Regressionsmodell wird verwendet, um das Endgewicht der Flaschen basierend auf dem Füllstand und der Temperatur vorherzusagen. Hierbei werden die Daten aus der sortierten CSV-Datei verwendet, um ein Modell zu trainieren, das die Beziehung zwischen den Eingangsvariablen (Füllstand und Temperatur) und der Zielvariable (Endgewicht) erlernt. Das Modell wird dann evaluiert, um die Genauigkeit der Vorhersagen zu überprüfen.
 
+Genutzte Spalten Modell-Typ  MSE-Wert (Training)  MSE-Wert (Test)
+0                             [fill_level_grams_red]     Linear             83168.93         71675.19
+1                            [fill_level_grams_blue]     Linear             68410.10         74259.43
+2                           [fill_level_grams_green]     Linear             60004.15         65893.45
+3  [temperature_red, temperature_blue, temperatur...]     Linear             83310.42         83005.42
+4  [fill_level_grams_red, fill_level_grams_blue, ...]     Linear                 0.00             0.00
+5  [fill_level_grams_red, fill_level_grams_blue, ...]     Linear             52536.53         50299.07
+6      [fill_level_grams_red, fill_level_grams_blue]      Linear             52615.29         50451.15
+7  [fill_level_grams_red, temperature_red, fill_l...]     Linear                 0.00             0.00
+
 4. Klassifikationsmodell für defekte Flaschen
+
