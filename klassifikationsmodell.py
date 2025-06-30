@@ -1,58 +1,82 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import f1_score, confusion_matrix
 import matplotlib.pyplot as plt
-import seaborn as sns
 
-# === 1. Beispielhafte Daten generieren oder laden ===
-# Für die Demo: 500 Vibrationswerte + Label is_cracked
-def generate_demo_data(n_samples=100):
-    np.random.seed(42)
-    data = []
-    for i in range(n_samples):
-        label = np.random.choice([0, 1])  # 0 = intakt, 1 = defekt
-        if label == 0:
-            vibration = np.random.normal(loc=0, scale=1, size=500)
-        else:
-            vibration = np.random.normal(loc=0, scale=2.5, size=500)
-        data.append(np.concatenate(([label], vibration)))
-    columns = ["is_cracked"] + [f"vib_{i}" for i in range(500)]
-    return pd.DataFrame(data, columns=columns)
+# CSV einlesen
+df = pd.read_csv("mqtt_data_structured.csv", converters={"drop_oscillation": str})
+df['drop_oscillation'] = df['drop_oscillation'].str.strip()
+df = df[df['drop_oscillation'].notna() & (df['drop_oscillation'] != '')]
 
-df = generate_demo_data()
+# Parser-Funktion
+def parse_osc_string(entry):
+    try:
+        entry = entry.strip("[]")
+        if entry.strip() == "":
+            return np.nan
+        parts = entry.split(",")
+        floats = [float(p.strip().strip("'").strip('"')) for p in parts if p.strip()]
+        return floats if len(floats) >= 5 else np.nan
+    except Exception as e:
+        print(f"❌ Fehler beim Parsen: {e} → Eintrag: {entry[:50]}...")
+        return np.nan
 
-# === 2. Merkmale extrahieren ===
-df["mean"] = df.iloc[:, 1:].mean(axis=1)
-df["std"] = df.iloc[:, 1:].std(axis=1)
-df["max"] = df.iloc[:, 1:].max(axis=1)
-df["min"] = df.iloc[:, 1:].min(axis=1)
-features = ["mean", "std", "max", "min"]
-X = df[features]
-y = df["is_cracked"]
+df['osc_list'] = df['drop_oscillation'].apply(parse_osc_string)
+df = df[df['osc_list'].apply(lambda x: isinstance(x, list) and len(x) >= 5)]
 
-# === 3. Daten aufteilen ===
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+# Ensure is_cracked exists
+df = df[df['is_cracked'].notna()]
 
-# === 4. Modell trainieren (kNN und LogReg als Vergleich) ===
-models = {
-    "kNN": KNeighborsClassifier(n_neighbors=3),
-    "LogReg": LogisticRegression()
-}
+# Now extract features
+df['osc_mean'] = df['osc_list'].apply(np.mean)
+df['osc_std'] = df['osc_list'].apply(np.std)
+df['osc_max'] = df['osc_list'].apply(np.max)
 
-for name, model in models.items():
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-    print(f"\n🧠 Modell: {name}")
-    print(classification_report(y_test, y_pred, digits=3))
-    
-    # Confusion Matrix anzeigen
-    cm = confusion_matrix(y_test, y_pred)
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=["intakt", "defekt"], yticklabels=["intakt", "defekt"])
-    plt.title(f"Confusion Matrix – {name}")
-    plt.xlabel("Vorhergesagt")
-    plt.ylabel("Tatsächlich")
-    plt.tight_layout()
-    plt.show()
+# Check the data before proceeding
+print("✅ Rows in DataFrame:", len(df))
+print(df[['osc_mean', 'osc_std', 'osc_max']].describe())
+
+
+# Featuresets
+X1 = df[['osc_mean']]
+X2 = df[['osc_mean', 'osc_std', 'osc_max']]
+
+print("📏 X1 shape:", X1.shape)
+print("🔍 First few rows:\n", X1.head())
+# Skalierung
+scaler1 = StandardScaler().fit(X1)
+X1_scaled = scaler1.transform(X1)
+
+scaler2 = StandardScaler().fit(X2)
+X2_scaled = scaler2.transform(X2)
+
+# Train-Test-Split
+X1_train, X1_test, y_train, y_test = train_test_split(X1_scaled, y, test_size=0.3, random_state=42)
+X2_train, X2_test, _, _ = train_test_split(X2_scaled, y, test_size=0.3, random_state=42)
+
+# Modell 1: kNN
+knn = KNeighborsClassifier(n_neighbors=3)
+knn.fit(X1_train, y_train)
+f1_knn = f1_score(y_test, knn.predict(X1_test))
+
+# Modell 2: Log. Regression
+logreg = LogisticRegression()
+logreg.fit(X2_train, y_train)
+f1_log = f1_score(y_test, logreg.predict(X2_test))
+
+# Ergebnisse anzeigen
+results = pd.DataFrame({
+    "Genutzte Features": ["osc_mean", "osc_mean + osc_std + osc_max"],
+    "Modell-Typ": ["kNN", "Log. Regression"],
+    "F1-Score (Test)": [f1_knn, f1_log]
+})
+print("\n📊 Klassifikationsergebnisse:")
+print(results.to_string(index=False))
+
+# Confusion Matrix zur Log. Regression
+print("\nConfusion Matrix für logistische Regression:")
+print(confusion_matrix(y_test, logreg.predict(X2_test)))

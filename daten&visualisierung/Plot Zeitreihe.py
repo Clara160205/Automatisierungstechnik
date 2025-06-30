@@ -1,6 +1,5 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 
 
 df = pd.read_csv("mqtt_data_structured.csv")
@@ -23,7 +22,6 @@ plt.xlabel("Zeit")
 plt.ylabel("Füllstand ")
 plt.legend()
 plt.xticks(rotation=45)
-plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H:%M:%S"))
 plt.tight_layout()
 plt.savefig("filllevel_by_dispenser.png")
 plt.show()

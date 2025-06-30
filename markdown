@@ -1,14 +1,17 @@
 1. MQTT_Client für SPS
-    
+
+Der MQTT_Client verbindet sich mit einem MQTT-Broker und sendet Daten an ein Topic sendet. Der Client sendet periodisch Füllstandsdaten für eine Flasche, die zufällig generiert werden.  Der Client bleibt aktiv, bis er manuell beendet wird.    
 
 2. Datenspeicherung und Visualisierung
 
 Zunächst werden die  Daten aus dem Topic iot1/teaching_factory in einer csv. Datei gespeichert. 
-Hier werden die Daten  noch nicht sortiert, sondern werden nur nach ihrem Erstellungsdatum sortiert. So können die Daten später flexibler verwendet und sortiert werden. Anschließend wird diese csv. Datei anhand der verschiedenen Kategorie sortiert, um die spätere Visualisierung zu erleichtern. Da während des Speichervorgangs die Verbindung zum Topic abgebrochen ist, werden in der sortierten csv. nur noch die Daten nach dem Verbindungsabbruch gespeichert. Dabei wird der json.Payload in ein Dictionary umgewandelt und in eine Liste von Dictionaries gespeichert. Um den Verlauf der Daten zu verfolgen, werden Zeitreihen der Temperatur pro Dispenser geplottet. 
+Hier werden die Daten  noch nicht sortiert, sondern werden nur nach ihrem Erstellungsdatum sortiert.  Diese einfache Speicherung ermöglicht eine spätere flexible Sortierung und Verarbeitung der Daten. Anschließend wird diese csv. Datei anhand der verschiedenen Kategorie sortiert, um die spätere Visualisierung zu erleichtern. Da während des Speichervorgangs die Verbindung zum Topic abgebrochen ist, werden in der sortierten csv. nur noch die Daten nach dem Wiederaufbau der Verbindung gespeichert. Dabei wird der .json Payload in ein Dictionary umgewandelt und in eine Liste von Dictionaries gespeichert. 
+
+Um den Verlauf der Daten zu verfolgen, werden Zeitreihen der Temperatur pro Dispenser geplottet. 
 
 ![Temperatur-Plot](temperature_by_dispenser.png) 
 
-Ausserdem wird der Füllstand der Flaschen geplottet. Alle Nulldaten werden entfernt, da diese nicht für die Visualisierung benötigt werden.
+Ausserdem wird der Füllstand der Flaschen geplottet. 
 
 ![Füllstand-Plot](filllevel_by_dispenser.png)
 
